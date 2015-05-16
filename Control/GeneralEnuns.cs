@@ -2,7 +2,7 @@ using System;
 
 namespace Dalssoft.DiagramNet
 {
-	internal enum CornerPosition: int
+	public enum CornerPosition: int
 	{
 		Nothing = -1,
 		BottomCenter = 0,

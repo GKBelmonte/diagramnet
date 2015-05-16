@@ -13,7 +13,7 @@ namespace Dalssoft.DiagramNet
 		protected LabelElement label = new LabelElement();
 
 		[NonSerialized]
-		private RectangleController controller;
+		protected RectangleController controller;
 
 		public RectangleNode(): this(0, 0, 100, 100)
 		{}
@@ -28,6 +28,7 @@ namespace Dalssoft.DiagramNet
 		{
 			rectangle = new RectangleElement(top, left, width, height);
 			SyncContructors();
+            controller = new RectangleController(this);
 		}
 
 		public override Color BorderColor
@@ -155,17 +156,14 @@ namespace Dalssoft.DiagramNet
 			base.visible = rectangle.Visible;
 		}
 
-		internal override void Draw(Graphics g)
+        protected internal override void Draw(Graphics g)
 		{
 			IsInvalidated = false;
-
 			rectangle.Draw(g);
 		}
 
 		IController IControllable.GetController()
 		{
-			if (controller == null)
-				controller = new RectangleController(this);
 			return controller;
 		}
 

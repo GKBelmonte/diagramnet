@@ -134,7 +134,7 @@ namespace Dalssoft.DiagramNet
 			p.Dispose();
 		}
 
-		internal override void Draw(Graphics g)
+        protected internal override void Draw(Graphics g)
 		{
 			IsInvalidated = false;
 

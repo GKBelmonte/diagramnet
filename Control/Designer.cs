@@ -1097,6 +1097,12 @@ namespace Dalssoft.DiagramNet
 		{
 			undo.AddUndo(document);
 		}
+
+        public bool UndoStackEnabled 
+        {
+            get { return undo.Enabled; }
+            set { undo.Enabled = value; }
+        }
 		#endregion
 
 		private void RecreateEventsHandlers()

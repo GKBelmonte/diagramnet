@@ -7,7 +7,7 @@ namespace Dalssoft.DiagramNet
 	/// <summary>
 	/// This class is the controller for RectangleElement
 	/// </summary>
-	internal class RectangleController: IController, IMoveController, IResizeController
+	public class RectangleController: IController, IMoveController, IResizeController
 	{
 		//parent element
 		protected BaseElement el;
@@ -36,6 +36,7 @@ namespace Dalssoft.DiagramNet
 				selectionCorner[i].FillColor1 = Color.White;
 				selectionCorner[i].FillColor2 = Color.Empty;
 			}
+            Resizeable = true;
 		}
 		
 		#region IController Members
@@ -158,8 +159,12 @@ namespace Dalssoft.DiagramNet
 			}			
 		}
 
+        public bool Resizeable { get; set; }
+
 		void IResizeController.UpdateCornersPos()
 		{
+            if (!Resizeable)
+                return;
 			// Update selection corner rectangle
 			Rectangle rec = new Rectangle(el.Location, el.Size);
 			selectionCorner[(int) CornerPosition.TopLeft].Location = new Point(rec.Location.X - selCornerSize, rec.Location.Y - selCornerSize);
@@ -178,6 +183,8 @@ namespace Dalssoft.DiagramNet
 
 		CornerPosition IResizeController.HitTestCorner(Point p)
 		{
+            if (!Resizeable)
+                return CornerPosition.Nothing;
 			for(int i = 0; i < selectionCorner.Length; i++)
 			{
 				IController ctrl = ((IControllable) selectionCorner[i]).GetController();
@@ -189,6 +196,8 @@ namespace Dalssoft.DiagramNet
 
 		void IResizeController.Start(Point posStart, CornerPosition corner)
 		{
+            if (!Resizeable)
+                return;
 			selCorner = corner;
 			dragOffset.X = selectionCorner[(int) selCorner].Location.X - posStart.X;
 			dragOffset.Y = selectionCorner[(int) selCorner].Location.Y - posStart.Y;
@@ -196,6 +205,8 @@ namespace Dalssoft.DiagramNet
 
 		void IResizeController.Resize(Point posCurrent)
 		{
+            if (!Resizeable)
+                return;
 			RectangleElement corner = selectionCorner[(int) selCorner];
 			Point loc;
 
@@ -271,6 +282,8 @@ namespace Dalssoft.DiagramNet
 
 		void IResizeController.End(Point posEnd)
 		{
+            if (!Resizeable)
+                return;
 			if ((el.Size.Height < 0) || (el.Size.Width < 0))
 			{
 				Rectangle urec = el.GetUnsignedRectangle();

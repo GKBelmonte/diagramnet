@@ -20,7 +20,7 @@ namespace Dalssoft.DiagramNet
 
 		public ElipseElement(int top, int left, int width, int height): base(top, left, width, height) {}
 
-		internal override void Draw(Graphics g)
+		protected internal override void Draw(Graphics g)
 		{
 			IsInvalidated = false;
 

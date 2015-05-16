@@ -6,7 +6,7 @@ namespace Dalssoft.DiagramNet
 	/// <summary>
 	/// To a class be a controller, it need to implements this interface.
 	/// </summary>
-	internal interface IController
+	public interface IController
 	{
 		BaseElement OwnerElement {get;}
 
