@@ -5,7 +5,7 @@ using System.Drawing;
 namespace Dalssoft.DiagramNet
 {
 	[Serializable]
-	public class ElementCollection : ReadOnlyCollectionBase
+    public class ElementCollection : ReadOnlyCollectionBase
 	{
 		private Point location = new Point(maxIntSize, maxIntSize);
 		private Size size = new Size(0, 0);

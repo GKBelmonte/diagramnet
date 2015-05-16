@@ -99,10 +99,9 @@ namespace Dalssoft.DiagramNet
 			connects[2] = new ConnectorElement(this);
 			connects[3] = new ConnectorElement(this);
 			UpdateConnectorsPosition();
-
 		}
 
-		protected void UpdateConnectorsPosition()
+		protected virtual void UpdateConnectorsPosition()
 		{
 			Point loc;
 			ConnectorElement connect;
@@ -161,7 +160,7 @@ namespace Dalssoft.DiagramNet
 
 		protected void DrawConnectors(Graphics g)
 		{
-			foreach (ConnectorElement ce in connects)
+			foreach (ConnectorElement ce in Connectors)
 			{
 				ce.Draw(g);
 			}

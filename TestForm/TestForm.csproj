@@ -5,9 +5,12 @@
     <ProductVersion>7.10.3077</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{0468C95B-C0D7-415E-9D73-64E11AD97738}</ProjectGuid>
-    <SccProjectName>$</SccProjectName>
-    <SccLocalPath>..</SccLocalPath>
-    <SccProvider>MSSCCI:Workspaces</SccProvider>
+    <SccProjectName>
+    </SccProjectName>
+    <SccLocalPath>
+    </SccLocalPath>
+    <SccProvider>
+    </SccProvider>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ApplicationIcon>App.ico</ApplicationIcon>
@@ -44,6 +47,7 @@
     <IsWebBootstrapper>false</IsWebBootstrapper>
     <UseApplicationTrust>false</UseApplicationTrust>
     <BootstrapperEnabled>true</BootstrapperEnabled>
+    <SccAuxPath />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <OutputPath>bin\Debug\</OutputPath>
