@@ -639,12 +639,14 @@ namespace Dalssoft.DiagramNet
                 }
             }
         }
-
+        [NonSerialized]
+        protected Pen gridPen;
+        
         internal void DrawGrid(Graphics g, Rectangle clippingRegion)
         {
             //			ControlPaint.DrawGrid(g, clippingRegion, gridSize, Color.LightGray);
-
-            Pen p = new Pen(new HatchBrush(HatchStyle.LargeGrid | HatchStyle.Percent90, Color.LightGray, Color.Transparent), 1);
+            if(gridPen == null)
+                gridPen = new Pen(new HatchBrush(HatchStyle.LargeGrid | HatchStyle.Percent90, Color.LightGray, Color.Transparent), 1);
 
             //Pen p = new Pen(Color.LightGray, 1);
 
@@ -659,15 +661,13 @@ namespace Dalssoft.DiagramNet
 
             for (int i = 0; i < maxX; i += gridSize.Width)
             {
-                g.DrawLine(p, i, 0, i, maxY);
+                g.DrawLine(gridPen, i, 0, i, maxY);
             }
 
             for (int i = 0; i < maxY; i += gridSize.Height)
             {
-                g.DrawLine(p, 0, i, maxX, i);
+                g.DrawLine(gridPen, 0, i, maxX, i);
             }
-
-            p.Dispose();
         }
         #endregion
 

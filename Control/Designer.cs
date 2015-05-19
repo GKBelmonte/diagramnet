@@ -52,6 +52,30 @@ namespace Dalssoft.DiagramNet
 		private UndoManager undo = new UndoManager(5);
 		private bool changed = false;
 
+        [NonSerialized]
+        protected Point scrollPosition;
+
+        [NonSerialized]
+        protected bool useCustomScroll = false;//independant of control boundaries and what may happen to be inside it
+
+        protected Point ScrollPosition
+        {
+            get
+            {
+                if (useCustomScroll)
+                    return scrollPosition;
+                else
+                    return AutoScrollPosition;
+            }
+            set
+            {
+                if (useCustomScroll)
+                    scrollPosition = value;
+                else
+                    AutoScrollPosition = value;
+            }
+        }
+        
 		public Designer()
 		{
 			// This call is required by the Windows.Forms Form Designer.
@@ -79,9 +103,15 @@ namespace Dalssoft.DiagramNet
 			labelTextBox.Hide();
 			this.Controls.Add(labelTextBox);
 
+            scrollPosition = new Point();
+
 			//EventsHandlers
 			RecreateEventsHandlers();
-		}
+            
+            AutoScroll = !useCustomScroll;
+            VScroll = !useCustomScroll;
+            HScroll = !useCustomScroll;
+        }
 		#endregion
 
 		/// <summary>
@@ -107,7 +137,7 @@ namespace Dalssoft.DiagramNet
 			// 
 			// Designer
 			// 
-			this.AutoScroll = true;
+			this.AutoScroll = false;
 			this.BackColor = System.Drawing.SystemColors.Window;
 			this.Name = "Designer";
 
@@ -161,7 +191,7 @@ namespace Dalssoft.DiagramNet
 			Matrix mtx;
 			g.PageUnit = GraphicsUnit.Pixel;
 
-			Point scrollPoint = this.AutoScrollPosition;
+            Point scrollPoint = ScrollPosition;
 			g.TranslateTransform(scrollPoint.X, scrollPoint.Y);
 
 			//Zoom
@@ -274,97 +304,95 @@ namespace Dalssoft.DiagramNet
 		}
 
 		#region Mouse Events
-		protected override void OnMouseDown(MouseEventArgs e)
-		{
-			Point mousePoint;
+        protected Point mouseDownLocation;
+        protected override void OnMouseDown(MouseEventArgs e)
+        {
+            mouseDownLocation = e.Location;
+            Point mousePoint;
 
-			//ShowSelectionCorner((document.Action==DesignerAction.Select));
+            //ShowSelectionCorner((document.Action==DesignerAction.Select));
+            if (e.Button == MouseButtons.Left)
+            {
+                switch (document.Action)
+                {
+                    // SELECT
+                    case DesignerAction.Connect:
+                    case DesignerAction.Select:
+                        mousePoint = Gsc2Goc(new Point(e.X, e.Y));
 
-			switch (document.Action)
-			{
-				// SELECT
-				case DesignerAction.Connect:
-				case DesignerAction.Select:
-					if (e.Button == MouseButtons.Left)
-					{
-						mousePoint = Gsc2Goc(new Point(e.X, e.Y));
-						
-						//Verify resize action
-						StartResizeElement(mousePoint);
-						if ((resizeAction != null) && (resizeAction.IsResizing)) break;
+                        //Verify resize action
+                        StartResizeElement(mousePoint);
+                        if ((resizeAction != null) && (resizeAction.IsResizing)) break;
 
-						//Verify label editing
-						if (isEditLabel)
-						{
-							EndEditLabel();
-						}
+                        //Verify label editing
+                        if (isEditLabel)
+                        {
+                            EndEditLabel();
+                        }
 
-						// Search element by click
-						selectedElement = document.FindElement(mousePoint);	
-						
-						if (selectedElement != null)
-						{
-							//Events
-							ElementMouseEventArgs eventMouseDownArg = new ElementMouseEventArgs(selectedElement, e.X, e.Y);
-							OnElementMouseDown(eventMouseDownArg);
+                        // Search element by click
+                        selectedElement = document.FindElement(mousePoint);
 
-							// Double-click to edit Label
-							if ((e.Clicks == 2) && (selectedElement is ILabelElement))
-							{
-								selectedLabel = ((ILabelElement) selectedElement).Label;
-								StartEditLabel();
-								break;
-							}
+                        if (selectedElement != null)
+                        {
+                            //Events
+                            ElementMouseEventArgs eventMouseDownArg = new ElementMouseEventArgs(selectedElement, e.X, e.Y);
+                            OnElementMouseDown(eventMouseDownArg);
 
-							// Element selected
-							if (selectedElement is ConnectorElement)
-							{
-								StartAddLink((ConnectorElement) selectedElement, mousePoint);
-								selectedElement = null;
-							}
-							else
-								StartSelectElements(selectedElement, mousePoint);
-						}
-						else
-						{
-							// If click is on neutral area, clear selection
-							document.ClearSelection();
-							Point p = Gsc2Goc(new Point(e.X, e.Y));;
-							isMultiSelection = true;
-							selectionArea.Visible = true;
-							selectionArea.Location = p;
-							selectionArea.Size = new Size(0, 0);
-							
-							if (resizeAction != null)
-								resizeAction.ShowResizeCorner(false);
-						}
-						base.Invalidate();
-					}
-					break;
+                            // Double-click to edit Label
+                            if ((e.Clicks == 2) && (selectedElement is ILabelElement))
+                            {
+                                selectedLabel = ((ILabelElement)selectedElement).Label;
+                                StartEditLabel();
+                                break;
+                            }
 
-				// ADD
-				case DesignerAction.Add:
+                            // Element selected
+                            if (selectedElement is ConnectorElement)
+                            {
+                                StartAddLink((ConnectorElement)selectedElement, mousePoint);
+                                selectedElement = null;
+                            }
+                            else
+                                StartSelectElements(selectedElement, mousePoint);
+                        }
+                        else
+                        {
+                            // If click is on neutral area, clear selection
+                            document.ClearSelection();
+                            Point p = Gsc2Goc(new Point(e.X, e.Y)); ;
+                            isMultiSelection = true;
+                            selectionArea.Visible = true;
+                            selectionArea.Location = p;
+                            selectionArea.Size = new Size(0, 0);
 
-					if (e.Button == MouseButtons.Left)
-					{
-						mousePoint = Gsc2Goc(new Point(e.X, e.Y));
-						StartAddElement(mousePoint);
-					}
-					break;
+                            if (resizeAction != null)
+                                resizeAction.ShowResizeCorner(false);
+                        }
+                        base.Invalidate();
+                        break;
 
-				// DELETE
-				case DesignerAction.Delete:
-					if (e.Button == MouseButtons.Left)
-					{
-						mousePoint = Gsc2Goc(new Point(e.X, e.Y));
-						DeleteElement(mousePoint);
-					}					
-					break;
-			}
-			
-			base.OnMouseDown (e);
-		
-		}
+                    // ADD
+                    case DesignerAction.Add:
+                        mousePoint = Gsc2Goc(new Point(e.X, e.Y));
+                        StartAddElement(mousePoint);
+                        break;
+
+                    // DELETE
+                    case DesignerAction.Delete:
+                        mousePoint = Gsc2Goc(new Point(e.X, e.Y));
+                        DeleteElement(mousePoint);
+                        break;
+                }
+            }
+            else if (e.Button == MouseButtons.Middle)
+            {
+                Cursor.Current = Cursors.SizeAll;
+            }
+
+            base.OnMouseDown(e);
+
+        }
 
 		protected override void OnMouseMove(MouseEventArgs e)
 		{
@@ -408,8 +436,7 @@ namespace Dalssoft.DiagramNet
 					mousePointerElement = null;
 				}
 			}			
-
-			if (e.Button == MouseButtons.Left)
+			else if (e.Button == MouseButtons.Left)
 			{
 				Point dragPoint = Gsc2Goc(new Point(e.X, e.Y));
 
@@ -449,13 +476,35 @@ namespace Dalssoft.DiagramNet
 					base.Invalidate();
 				}
 			}
+            else if (e.Button == MouseButtons.Middle)
+            {
+                //Handles panning
+                //delta =  e.Location - mouseDown
+                Point delta = new Point(e.X - mouseDownLocation.X, e.Y- mouseDownLocation.Y);
+
+                if (delta.X * delta.X + delta.Y * delta.Y > 8)
+                {
+                    //Location += delta
+                    //AutoscrollPosition looks negative but requires positive values 
+                    //because REASONS! https://msdn.microsoft.com/en-us/library/system.windows.forms.scrollablecontrol.autoscrollposition%28v=vs.110%29.aspx#Remarks
+                    var x = (useCustomScroll ? ScrollPosition.X: -ScrollPosition.X) + delta.X;
+                    var y = (useCustomScroll ? ScrollPosition.Y : -ScrollPosition.Y) + delta.Y;
+                    var newScroll = new Point(x, y);
+                    ScrollPosition = newScroll;
+                    mouseDownLocation = e.Location;
+                    //Invalidate();
+                }
+            }
 
 			base.OnMouseMove (e);
 		}
 
 		protected override void OnMouseUp(MouseEventArgs e)
 		{
-			Rectangle selectionRectangle = selectionArea.GetUnsignedRectangle();
+            if (e.Button == MouseButtons.Middle)
+                Cursor.Current = Cursors.Default;
+            
+            Rectangle selectionRectangle = selectionArea.GetUnsignedRectangle();
 			
 			if ((moveAction != null) && (moveAction.IsMoving))
 			{
@@ -511,7 +560,21 @@ namespace Dalssoft.DiagramNet
 
 			base.OnMouseUp (e);
 		}
-		#endregion
+
+        protected override void OnMouseWheel(MouseEventArgs e)
+        {
+            if (useCustomScroll)
+            {
+                const int WHEEL_DATA = 120; //because reasons. Also, does one need to dllimport to get this value normally?
+                const float ZOOM_PER_ROLL_VALUE = 0.05f;
+                var zoomDelta = (float)(e.Delta / WHEEL_DATA) * ZOOM_PER_ROLL_VALUE;
+                Document.Zoom += zoomDelta;
+            }
+            else
+                base.OnMouseWheel(e); //scroll up down
+
+        }
+        #endregion
 
 		#endregion
 		
@@ -746,16 +809,16 @@ namespace Dalssoft.DiagramNet
 		public Point Gsc2Goc(Point gsp)
 		{
 			float zoom = document.Zoom;
-			gsp.X = (int) ((gsp.X - this.AutoScrollPosition.X) / zoom);
-			gsp.Y = (int) ((gsp.Y - this.AutoScrollPosition.Y) / zoom);
+            gsp.X = (int)((gsp.X - this.ScrollPosition.X) / zoom);
+            gsp.Y = (int)((gsp.Y - this.ScrollPosition.Y) / zoom);
 			return gsp;
 		}
 
 		public Rectangle Gsc2Goc(Rectangle gsr)
 		{
 			float zoom = document.Zoom;
-			gsr.X = (int) ((gsr.X - this.AutoScrollPosition.X) / zoom);
-			gsr.Y = (int) ((gsr.Y - this.AutoScrollPosition.Y) / zoom);
+            gsr.X = (int)((gsr.X - this.ScrollPosition.X) / zoom);
+            gsr.Y = (int)((gsr.Y - this.ScrollPosition.Y) / zoom);
 			gsr.Width = (int) (gsr.Width / zoom);
 			gsr.Height = (int) (gsr.Height / zoom);
 			return gsr;
@@ -764,8 +827,8 @@ namespace Dalssoft.DiagramNet
 		public Rectangle Goc2Gsc(Rectangle gsr)
 		{
 			float zoom = document.Zoom;
-			gsr.X = (int) ((gsr.X + this.AutoScrollPosition.X) * zoom);
-			gsr.Y = (int) ((gsr.Y + this.AutoScrollPosition.Y) * zoom);
+            gsr.X = (int)((gsr.X + this.ScrollPosition.X) * zoom);
+            gsr.Y = (int)((gsr.Y + this.ScrollPosition.Y) * zoom);
 			gsr.Width = (int) (gsr.Width * zoom);
 			gsr.Height = (int) (gsr.Height * zoom);
 			return gsr;

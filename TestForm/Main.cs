@@ -725,7 +725,6 @@ namespace Dalssoft.TestForm
 			// 
 			// designer1
 			// 
-			this.designer1.AutoScroll = true;
 			this.designer1.AutoScrollMinSize = new System.Drawing.Size(100, 100);
 			this.designer1.BackColor = System.Drawing.SystemColors.Window;
 			this.designer1.Dock = System.Windows.Forms.DockStyle.Fill;
