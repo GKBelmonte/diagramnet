@@ -55,21 +55,29 @@ namespace Dalssoft.DiagramNet
         [NonSerialized]
         protected Point scrollPosition;
 
-        [NonSerialized]
-        protected bool useCustomScroll = false;//independant of control boundaries and what may happen to be inside it
+        /// <summary>
+        /// Independant of control boundaries and what may happen to be inside it
+        /// draw event does not get called until the mouse move events are done though
+        /// </summary>]
+        protected bool UseCustomScroll { get; set; }
+
+        /// <summary>
+        /// Removes scrolling with mouse wheel to use zoom on mouse wheel on default scrolling
+        /// </summary>
+        protected bool ZoomToPointEnabled { get; set;}
 
         protected Point ScrollPosition
         {
             get
             {
-                if (useCustomScroll)
+                if (UseCustomScroll)
                     return scrollPosition;
                 else
                     return AutoScrollPosition;
             }
             set
             {
-                if (useCustomScroll)
+                if (UseCustomScroll)
                     scrollPosition = value;
                 else
                     AutoScrollPosition = value;
@@ -107,10 +115,14 @@ namespace Dalssoft.DiagramNet
 
 			//EventsHandlers
 			RecreateEventsHandlers();
+
+            UseCustomScroll = false;
+            ZoomToPointEnabled = true;
             
-            AutoScroll = !useCustomScroll;
-            VScroll = !useCustomScroll;
-            HScroll = !useCustomScroll;
+            AutoScroll = !UseCustomScroll;
+            VScroll = !UseCustomScroll;
+            HScroll = !UseCustomScroll;
+            AutoScrollMargin = new Size(1000, 1000);
         }
 		#endregion
 
@@ -487,8 +499,8 @@ namespace Dalssoft.DiagramNet
                     //Location += delta
                     //AutoscrollPosition looks negative but requires positive values 
                     //because REASONS! https://msdn.microsoft.com/en-us/library/system.windows.forms.scrollablecontrol.autoscrollposition%28v=vs.110%29.aspx#Remarks
-                    var x = (useCustomScroll ? ScrollPosition.X: -ScrollPosition.X) + delta.X;
-                    var y = (useCustomScroll ? ScrollPosition.Y : -ScrollPosition.Y) + delta.Y;
+                    var x = (UseCustomScroll ? ScrollPosition.X: -ScrollPosition.X) + delta.X;
+                    var y = (UseCustomScroll ? ScrollPosition.Y : -ScrollPosition.Y) + delta.Y;
                     var newScroll = new Point(x, y);
                     ScrollPosition = newScroll;
                     mouseDownLocation = e.Location;
@@ -563,12 +575,20 @@ namespace Dalssoft.DiagramNet
 
         protected override void OnMouseWheel(MouseEventArgs e)
         {
-            if (useCustomScroll)
+            if (UseCustomScroll || ZoomToPointEnabled)
             {
                 const int WHEEL_DATA = 120; //because reasons. Also, does one need to dllimport to get this value normally?
                 const float ZOOM_PER_ROLL_VALUE = 0.05f;
                 var zoomDelta = (float)(e.Delta / WHEEL_DATA) * ZOOM_PER_ROLL_VALUE;
+                var initialZoom = Document.Zoom;
+                var newZoom = initialZoom + zoomDelta;
+
                 Document.Zoom += zoomDelta;
+                var panX = (int)((newZoom / initialZoom) * e.X - e.X);
+                var panY = (int)((newZoom / initialZoom) * e.Y - e.Y);
+
+                var newScroll = new Point(-ScrollPosition.X + panX, -ScrollPosition.Y + panY);
+                ScrollPosition = newScroll;
             }
             else
                 base.OnMouseWheel(e); //scroll up down
@@ -814,7 +834,8 @@ namespace Dalssoft.DiagramNet
 			return gsp;
 		}
 
-		public Rectangle Gsc2Goc(Rectangle gsr)
+
+		public Rectangle Gsc2Goc(Rectangle gsr) //Diagram to document
 		{
 			float zoom = document.Zoom;
             gsr.X = (int)((gsr.X - this.ScrollPosition.X) / zoom);
