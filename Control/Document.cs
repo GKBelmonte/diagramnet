@@ -641,12 +641,18 @@ namespace Dalssoft.DiagramNet
         }
         [NonSerialized]
         protected Pen gridPen;
+
+        [NonSerialized]
+        protected Pen axisPen;
         
         internal void DrawGrid(Graphics g, Rectangle clippingRegion)
         {
             //			ControlPaint.DrawGrid(g, clippingRegion, gridSize, Color.LightGray);
             if(gridPen == null)
                 gridPen = new Pen(new HatchBrush(HatchStyle.LargeGrid | HatchStyle.Percent90, Color.LightGray, Color.Transparent), 1);
+
+            if (axisPen == null)
+                axisPen = new Pen(new HatchBrush(HatchStyle.LargeGrid | HatchStyle.Percent30, Color.Black, Color.Transparent), 1);
 
             //Pen p = new Pen(Color.LightGray, 1);
 
@@ -659,15 +665,22 @@ namespace Dalssoft.DiagramNet
             if (windowSize.Height / zoom > maxY)
                 maxY = (int)(windowSize.Height / zoom);
 
-            for (int i = 0; i < maxX; i += gridSize.Width)
+            //draw the y axes
+            int i = 0;
+            g.DrawLine(axisPen, i, 0, i, maxY);
+            for (i = 1; i < maxX - 1; i += (int) (gridSize.Width * zoom))
             {
                 g.DrawLine(gridPen, i, 0, i, maxY);
             }
-
-            for (int i = 0; i < maxY; i += gridSize.Height)
+            g.DrawLine(axisPen, i, 0, i, maxY);
+            //draw the x-axes
+            i = 0;
+            g.DrawLine(axisPen, 0, i, maxX, i);
+            for (i = 1; i < maxY - 1; i += (int)(gridSize.Height * zoom))
             {
                 g.DrawLine(gridPen, 0, i, maxX, i);
             }
+            g.DrawLine(axisPen, 0, i, maxX, i);
         }
         #endregion
 
