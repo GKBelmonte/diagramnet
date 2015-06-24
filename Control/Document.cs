@@ -574,40 +574,40 @@ namespace Dalssoft.DiagramNet
 
         #region Draw Methods
         internal void DrawElements(Graphics g, Rectangle clippingRegion)
-		{
-			//Draw Links first
-			for (int i = 0; i <= elements.Count - 1; i++)
-			{
-				BaseElement el = elements[i];
-				if ((el is BaseLinkElement) && (NeedDrawElement(el, clippingRegion)))
-					el.Draw(g);
-											
-				if (el is ILabelElement)
-					((ILabelElement) el).Label.Draw(g);
-			}
+        {
+            //Draw Links first
+            for (int i = 0; i <= elements.Count - 1; i++)
+            {
+                BaseElement el = elements[i];
+                if ((el is BaseLinkElement) && (NeedDrawElement(el, clippingRegion)))
+                    el.Draw(g);
 
-			//Draw the other elements
-			for (int i = 0; i <= elements.Count - 1; i++)
-			{
-				BaseElement el = elements[i];
+                if (el is ILabelElement)
+                    ((ILabelElement)el).Label.Draw(g);
+            }
 
-				if (!(el is BaseLinkElement) && (NeedDrawElement(el, clippingRegion)))
-				{
-					if (el is NodeElement)
-					{
-						NodeElement n = (NodeElement) el;
-						n.Draw(g, (action == DesignerAction.Connect));
-					}
-					else
-					{
-						el.Draw(g);
-					}
+            //Draw the other elements
+            for (int i = 0; i <= elements.Count - 1; i++)
+            {
+                BaseElement el = elements[i];
 
-					if (el is ILabelElement)
-						((ILabelElement) el).Label.Draw(g);
-				}
-			}
-		}
+                if (!(el is BaseLinkElement) && (NeedDrawElement(el, clippingRegion)))
+                {
+                    if (el is NodeElement)
+                    {
+                        NodeElement n = (NodeElement)el;
+                        n.Draw(g, (action == DesignerAction.Connect));
+                    }
+                    else
+                    {
+                        el.Draw(g);
+                    }
+
+                    if (el is ILabelElement)
+                        ((ILabelElement)el).Label.Draw(g);
+                }
+            }
+        }
 
         private bool NeedDrawElement(BaseElement el, Rectangle clippingRegion)
         {
@@ -641,11 +641,11 @@ namespace Dalssoft.DiagramNet
         }
         [NonSerialized]
         protected Pen gridPen;
-        
+
         internal void DrawGrid(Graphics g, Rectangle clippingRegion)
         {
             //			ControlPaint.DrawGrid(g, clippingRegion, gridSize, Color.LightGray);
-            if(gridPen == null)
+            if (gridPen == null)
                 gridPen = new Pen(new HatchBrush(HatchStyle.LargeGrid | HatchStyle.Percent90, Color.LightGray, Color.Transparent), 1);
 
             //Pen p = new Pen(Color.LightGray, 1);
@@ -679,8 +679,9 @@ namespace Dalssoft.DiagramNet
 
         protected virtual void OnPropertyChanged(EventArgs e)
         {
-            if (PropertyChanged != null)
-                PropertyChanged(this, e);
+            var handle = PropertyChanged;
+            if (handle != null)
+                handle(this, e);
         }
 
         // Appearance Property Changed
@@ -690,10 +691,9 @@ namespace Dalssoft.DiagramNet
         protected virtual void OnAppearancePropertyChanged(EventArgs e)
         {
             OnPropertyChanged(e);
-
-            if (AppearancePropertyChanged != null)
-                AppearancePropertyChanged(this, e);
-
+            var handle = AppearancePropertyChanged;
+            if (handle != null)
+                handle(this, e);
         }
 
         // Element Property Changed
@@ -702,8 +702,9 @@ namespace Dalssoft.DiagramNet
 
         protected virtual void OnElementPropertyChanged(object sender, EventArgs e)
         {
-            if (ElementPropertyChanged != null)
-                ElementPropertyChanged(sender, e);
+            var handle = ElementPropertyChanged;
+            if (handle != null)
+                handle(sender, e);
         }
 
         // Element Selection
@@ -714,10 +715,23 @@ namespace Dalssoft.DiagramNet
 
         protected virtual void OnElementSelection(object sender, ElementSelectionEventArgs e)
         {
-            if (ElementSelection != null)
-                ElementSelection(sender, e);
+            var handle = ElementSelection;
+            if (handle != null)
+                handle(sender, e);
         }
 
+        // Element Deletion
+        public delegate void ElementDeletedEventHandler(object sender, ElementSelectionEventArgs e);
+
+        [field: NonSerialized]
+        public event ElementDeletedEventHandler ElementDeleted;
+
+        protected virtual void OnElementDeleted(object sender, ElementDeletedEventHandler e)
+        {
+            var handle = ElementDeleted;
+            if (handle != null)
+                handle(sender, e);
+        }
 
         #endregion
 
