@@ -163,8 +163,9 @@ namespace Dalssoft.DiagramNet
 
 		protected virtual void OnAppearanceChanged(EventArgs e)
 		{
-			if (AppearanceChanged != null)
-				AppearanceChanged(this, e);
+            var handler = AppearanceChanged;
+            if (handler != null)
+                handler(this, e);
 		}
 		#endregion
 
