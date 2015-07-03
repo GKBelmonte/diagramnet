@@ -2,27 +2,40 @@ using System;
 
 namespace Dalssoft.DiagramNet
 {
-	public class ElementSelectionEventArgs: EventArgs 
-	{
-		ElementCollection elements;
+    public abstract class ElementCollectionEventArgs : EventArgs
+    { 
+    	protected ElementCollection elements;
 
-		public ElementSelectionEventArgs(ElementCollection elements)
+        public ElementCollectionEventArgs(ElementCollection elements)
 		{
 			this.elements = elements;
 		}
 
 		public ElementCollection Elements
 		{
-			get
-			{
-				return elements;
-			}
+			get{ return elements; }
 		}
+    }
 
-		public override string ToString()
+    public class ElementSelectionEventArgs : ElementCollectionEventArgs 
+	{
+        public ElementSelectionEventArgs(ElementCollection elements) : base(elements) { }
+ 
+        public override string ToString()
 		{
-			return "ElementCollection: " + elements.Count.ToString();
+			return "ElementSelection: " + elements.Count.ToString();
 		}
-
 	}
+
+    public class ElementDeletedEventArgs : ElementCollectionEventArgs
+    {
+        public ElementDeletedEventArgs(ElementCollection elements) : base(elements) { }
+
+        public override string ToString()
+		{
+			return "ElementDeletion: " + elements.Count.ToString();
+		}
+    }
+
+
 }

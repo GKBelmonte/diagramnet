@@ -4,6 +4,7 @@ using System.Drawing.Drawing2D;
 using System.Windows.Forms;
 using System.Runtime.Serialization;
 using System.Security.Permissions;
+//using Diagram.NET;
 
 namespace Dalssoft.DiagramNet
 {
@@ -734,12 +735,12 @@ namespace Dalssoft.DiagramNet
         }
 
         // Element Deletion
-        public delegate void ElementDeletedEventHandler(object sender, ElementSelectionEventArgs e);
+        public delegate void ElementDeletedEventHandler(object sender, ElementDeletedEventArgs e);
 
         [field: NonSerialized]
         public event ElementDeletedEventHandler ElementDeleted;
 
-        protected virtual void OnElementDeleted(object sender, ElementDeletedEventHandler e)
+        protected virtual void OnElementDeleted(object sender, ElementDeletedEventArgs e)
         {
             var handle = ElementDeleted;
             if (handle != null)
